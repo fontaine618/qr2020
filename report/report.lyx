@@ -183,6 +183,51 @@ LatexCommand tableofcontents
 
 \end_layout
 
+\begin_layout Section*
+To Do, Notes and Comments
+\end_layout
+
+\begin_layout Itemize
+maybe pull in some census data to get better month estimates of population
+\end_layout
+
+\begin_layout Itemize
+midpoint/mean/median/use external data
+\end_layout
+
+\begin_layout Itemize
+estimate population per month
+\end_layout
+
+\begin_layout Itemize
+mean + 3 PC
+\end_layout
+
+\begin_layout Itemize
+Pc1 = main effects
+\end_layout
+
+\begin_layout Itemize
+pc2 = interaction with year
+\end_layout
+
+\begin_layout Itemize
+pc3 = interaction with month
+\end_layout
+
+\begin_layout Itemize
+Febuaray has only 28 days bro
+\end_layout
+
+\begin_layout Itemize
+pca on log for (1) same transform a Poisson and (2) they are basically the
+ same with small rates.
+\end_layout
+
+\begin_layout Itemize
+maybe some extreme value for young females in ~Nov 2010
+\end_layout
+
 \begin_layout Section
 Introduction
 \end_layout
