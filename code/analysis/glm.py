@@ -25,70 +25,81 @@ mortality_long = mortality_long.merge(
 
 mortality_long["Exposure"] = mortality_long["Est_Pop_Lin"] * mortality_long["Days"]
 
-df = mortality_long[["Deaths", "Sex", "Midpoint_linear", "Year", "Month", "Exposure"]]
-df.columns = ["Deaths", "Sex", "Age", "Year", "Month", "Exposure"]
-df["FDate"] = df["Year"] + (df["Month"] - 1) / 12
+df = mortality_long[["Deaths", "Sex", "Age_group", "Midpoint_linear", "Year", "Month", "Exposure", "Days"]]
+
+cumdays = df.groupby(["Sex", "Age_group", "Year"]).apply(
+    lambda d: (d["Days"].cumsum() - d["Days"][0] + 15) / d["Days"].sum()
+)
+
+df["FDate"] = df["Year"].values + cumdays.values
+df.columns = ["Deaths", "Sex", "Age_group", "Age", "Year", "Month", "Exposure", "Days", "FDate"]
 
 df.to_csv("./data/processed/df_for_glm.csv")
 
 
-families = ["log_normal", "poisson", "NB"]
-
+families = ["logNormal", "Poisson", "NB"]
 
 formulas = {
-    "A*(Y+S*M)": "Deaths ~ bs(Age, n_age) * (bs(FDate, n_date) + C(Sex) * bs(Month, n_month))",
-    "A*(Y+S+M)": "Deaths ~ bs(Age, n_age) * (bs(FDate, n_date) + C(Sex) + bs(Month, n_month))",
-    #"A*(Y+M)": "Deaths ~ bs(Age, n_age) * (bs(FDate, n_date) + bs(Month, n_month))",
+    "sA*(sD+S*sM)": "Deaths ~ bs(Age, 9) * (bs(FDate, 50) + C(Sex) * bs(Month, 7))",
+    "cA*(sD+S*sM)": "Deaths ~ C(Age_group) * (bs(FDate, 50) + C(Sex) * bs(Month, 7))",
+    "sA*(sD+S*cM)": "Deaths ~ bs(Age, 9) * (bs(FDate, 50) + C(Sex) * C(Month))",
+    "cA*(sD+S*cM)": "Deaths ~ C(Age_group) * (bs(FDate, 50) + C(Sex) * C(Month))",
+    "sA*(sY+S*sM)": "Deaths ~ bs(Age, 9) * (bs(Year, 7) + C(Sex) * bs(Month, 7))",
+    "cA*(sY+S*sM)": "Deaths ~ C(Age_group) * (bs(Year, 7) + C(Sex) * bs(Month, 7))",
+    "sA*(sY+S*cM)": "Deaths ~ bs(Age, 9) * (bs(Year, 7) + C(Sex) * C(Month))",
+    "cA*(sY+S*cM)": "Deaths ~ C(Age_group) * (bs(Year, 7) + C(Sex) * C(Month))",
 }
 
 models = itertools.product(
-    families, formulas.items(), [18],  [25, 50],  [8, 12],
+    families, formulas.items(),
 )
 
 results = pd.DataFrame(
-    columns=["model", "LogLik", "DF_Model", "AIC", "BIC", "MSE", "MSEL", "MSELR", "Formula"],
-    index=pd.MultiIndex(levels=[[]]*5,
-                    codes=[[]]*5,
-                    names=["familiy", "formula", "n_age", "n_date", "n_month"])
+    columns=["model", "LogLik", "DF_Model", "AIC", "BIC", "MSE", "MSEL", "Formula"],
+    index=pd.MultiIndex(levels=[[]]*3,
+                    codes=[[]]*3,
+                    names=["family", "formula", "dummy"])
 )
 
-for family, (name, formula), n_age, n_date, n_month in models:
+for family, (name, formula) in models:
     print("=" * 80)
-    vals = {"n_age": n_age, "n_date": n_date, "n_month": n_month}
+    # vals = {"n_age": n_age, "n_date": n_date, "n_month": n_month}
     f = formula
-    for k, v in vals.items():
-        f = f.replace(k, str(v))
-    print(name, f)
+    # for k, v in vals.items():
+    #     f = f.replace(k, str(v))
+    print(family, name, f)
     y, X = patsy.dmatrices(f, data=df)
     exp = df["Exposure"].to_numpy()
-    if family == "poisson":
+    if family == "Poisson":
         glm = sm.GLM(y, X, family=sm.families.Poisson(), exposure=exp)
     elif family == "NB":
         glm = sm.GLM(y, X, family=sm.families.NegativeBinomial(), exposure=exp)
-    elif family == "log_normal":
+    elif family == "logNormal":
         fm = sm.families.Gaussian(link=sm.families.links.log())
-        glm = sm.GLM(y.ravel()/exp, X, family=fm, exposure=exp)
+        glm = sm.GLM(y, X, family=fm, exposure=exp)
     res = glm.fit()
     pred = res.predict().reshape((-1, 1))
-    if family == "log_normal":
-        pred = pred * exp.reshape((-1, 1))
     mse = np.mean((y - pred)**2)
     msel = np.mean((np.log(y) - np.log(pred))**2)
-    mselr = np.mean((np.log(y/exp) - np.log(pred/exp))**2)
     print("LogLik", res.llf)
     print("DF Model", res.df_model)
     print("AIC", res.aic)
     print("BIC", res.bic)
     print("MSE", mse)
     print("MSEL", msel)
-    print("MSELR", mselr)
-    results.loc[(family, name, n_age, n_date, n_month)] = (
-        res, res.llf, res.df_model, res.aic, res.bic, mse, msel, mselr, f
-    )
+    results.loc[(family, name, "")] = [
+        res, res.llf, res.df_model, res.aic, res.bic, mse, msel, f
+    ]
 
-print(results.drop(columns=["model", "Formula"]))
+bests = results.loc[results["MSE"].le(80000) & results["MSEL"].le(0.003)]
+print(bests[["AIC", "BIC", "MSE", "MSEL"]].applymap("{:.4f}".format))
 
-results.drop(columns="model").to_csv("./data/results/NB_models.csv")
+results.drop(columns="model").to_csv("./data/results/glm_models.csv")
+
+
+best_models = results.iloc[[2, 10, 16]]
+print(best_models[["MSE", "MSEL"]])
+best_models.drop(columns="model").to_csv("./data/results/glm_best_models.csv")
 
 x = res.predict()
 pred = res.predict()
