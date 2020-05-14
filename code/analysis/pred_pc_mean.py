@@ -9,7 +9,7 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-mean = pd.read_csv("./data/processed/pc_mean.csv", index_col=0)
+mean = pd.read_csv("./data/processed/pred_pc_mean.csv", index_col=0)
 mean.index = pd.to_datetime(mean.index)
 date = pd.to_datetime(mean.index)
 mean["Year"] = date.map(lambda x: x.year)
@@ -22,20 +22,7 @@ mean_long = mean.pivot(
 mean_long.columns = range(1, 13)
 
 
-
-import patsy
-from statsmodels.api import OLS
-
-y, X = patsy.dmatrices("Mean ~ bs(Year, 5) + bs(Month, 5)", data=mean)
-model = OLS(y, X).fit()
-model.summary()
-
-
-
-
-mean["Pred"] = model.predict()
-
-mean.columns = ['Mean', 'Year', 'Month', 'Fitted mean']
+mean.columns = ['Mean', 'Year', 'Month']
 
 m_long = mean.pivot(index="Month", columns="Year", values="Mean")
 d_long = mean.reset_index().pivot(index="Month", columns="Year", values="index")
@@ -60,9 +47,7 @@ ax1.set_xlabel("Year")
 m_long.plot(ax=ax2, legend=False, cmap="coolwarm")
 ax2.grid(which="minor", axis="x", color="white", linestyle=":")
 ax2.minorticks_on()
-#ax2.plot(range(1, 13), mean["Fitted mean"][-12:], color="black", linewidth=4, label="Fitted mean")
-#ax2.legend(facecolor="white", framealpha=0.8, frameon=True, ncol=7)
 ax2.set_title("PCA Mean by Month", loc="left")
 
 plt.tight_layout()
-plt.savefig("./tmp/pc_mean.pdf")
+plt.savefig("./tmp/pred_pc_mean.pdf")

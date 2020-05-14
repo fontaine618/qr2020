@@ -35,6 +35,8 @@ for _, (family, name, formula) in best_models[["family", "formula", "Formula"]].
         glm = sm.GLM(y, X, family=sm.families.Poisson(), exposure=exp)
     elif family == "NB":
         glm = sm.GLM(y, X, family=sm.families.NegativeBinomial(), exposure=exp)
+    elif family == "Tweedie":
+        glm = sm.GLM(y, X, family=sm.families.Tweedie(var_power=1.5, eql=True), exposure=exp)
     elif family == "logNormal":
         fm = sm.families.Gaussian(link=sm.families.links.log())
         glm = sm.GLM(y, X, family=fm, exposure=exp)
@@ -53,9 +55,16 @@ for _, (family, name, formula) in best_models[["family", "formula", "Formula"]].
     ]
 
 
-def var_plot(ax, model):
-    pred = model.predict()
+def var_plot(ax, model, type="mean"):
+    if type == "mean":
+        pred = model.predict()
+    elif type == "rate":
+        pred = model.predict() / df["Exposure"].to_numpy()
     resid = model.resid_pearson / np.sqrt(model.scale)
+
+    bins = np.logspace(np.log10(pred.min()), np.log10(pred.max()), num=25)
+    counts = np.histogram(pred, bins)[0]
+    centers = (bins[:-1] + bins[1:]) / 2
 
     d = pd.DataFrame({"pred": pred, "resid": resid})
     d.sort_values("pred", inplace=True)
@@ -65,24 +74,27 @@ def var_plot(ax, model):
     d["U"] = d["M"] + 1.96 * d["S"]
     d["L"] = d["M"] - 1.96 * d["S"]
 
-    ax.scatter(pred, resid, alpha=0.2)
+    ax.scatter(d["pred"], d["resid"], alpha=0.2)
 
     ax.plot(d["pred"][50:-50], d["U"][50:-50], color="black", linestyle="--")
     ax.plot(d["pred"][50:-50], d["M"][50:-50], color="black", linestyle="-")
     ax.plot(d["pred"][50:-50], d["L"][50:-50], color="black", linestyle="--")
 
+    ax.fill_between(x=centers, y1=-10, y2=-10 + counts/100, alpha=0.2)
 
 
-fig, axs = plt.subplots(1, 3, figsize=(10,3), sharey=True)
 
-for k in range(3):
+fig, axs = plt.subplots(1, 4, figsize=(10,3), sharey=True)
+
+for k in range(4):
     ax = axs[k]
     row = best_results.iloc[k]
-    var_plot(ax, row["model"])
+    var_plot(ax, row["model"], "mean")
     if k == 0:
-        ax.set_ylabel("Pearson residuals")
+        ax.set_ylabel("Normalized Pearson residuals")
     ax.set_xlabel("Fitted mean")
-    ax.set_title(["Log Normal", "Poisson", "Negative Binomial"][k], loc="left")
+    ax.set_title(["Normal (log link)", "Poisson", "Negative Binomial", "Tweedie(1.5)"][k], loc="left")
+    ax.set_xscale("log")
 
 plt.tight_layout()
 plt.savefig("./tmp/resid_plot.pdf")

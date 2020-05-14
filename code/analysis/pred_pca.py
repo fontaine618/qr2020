@@ -8,28 +8,17 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-mortality_wide = pd.read_csv("./data/processed/mortality_wide_est_pop.csv")
-mortality_wide.set_index(["Value", "Sex", "Age_group"], inplace=True)
-mortality_wide.sort_index(inplace=True)
+df_ts = pd.read_csv("./data/processed/pred_wide.csv", index_col=[0, 1, 2])
 
-days_per_month = pd.read_csv("./data/processed/days_per_month.csv", index_col=0)
-
-deaths = mortality_wide.loc[("Deaths", slice(None), slice(None)), :]
-pop = mortality_wide.loc[("Estimated_Population_Linear", slice(None), slice(None)), :]
-
-exposure = pop.apply(lambda x: x * days_per_month["Days"], 1)
-
-rate = deaths.to_numpy() / exposure.to_numpy()
+log_pred_rate = df_ts.loc[(slice(None), slice(None), "pred_rate"), :].applymap(np.log)
 
 midpoints = pd.read_csv("./data/processed/midpoints.csv")
 midpoints = midpoints.groupby(["Sex", "Age_group"]).agg("mean")
 
-
 n_components = 3
 pca = PCA()
-logits = np.log(rate)
-pca.fit(logits)
-U_rate = pca.transform(logits)
+pca.fit(log_pred_rate)
+U_rate = pca.transform(log_pred_rate)
 percent_var_explained = pca.explained_variance_ratio_
 
 pct_var_explained_remaining = pca.explained_variance_[1:].cumsum() / pca.explained_variance_[1:].sum()
@@ -47,7 +36,7 @@ for c in range(n_components):
     X = pca.inverse_transform(U)
     for k in range(3):
         axs[c, 0].plot(
-            pd.to_datetime(mortality_wide.columns),
+            pd.to_datetime(df_ts.columns),
             X[k, :] - pca.mean_,
             color="#{}{}{}{}{}{}".format(*[["3", "6", "9"][k]]*6),
             label="{:.2f}".format(U[k, c])
@@ -72,9 +61,9 @@ for c in range(n_components):
     axs[c, 1].set_ylabel("Component {}".format(c + 1))
     axs[c, 1].set_xlabel("Age")
 
-fig.suptitle("Log Mortality Rate Time Series: Principal Components Analysis", fontweight="bold")
+fig.suptitle("Predicted Log Mortality Rate Time Series: Principal Components Analysis", fontweight="bold")
 fig.tight_layout(rect=[0, 0, 1, 0.95])
-fig.savefig("./tmp/pca_ts_logit.pdf")
+fig.savefig("./tmp/pred_pca_ts_logit.pdf")
 
 # 1: mean of ts
 # 2: slope
@@ -82,7 +71,7 @@ fig.savefig("./tmp/pca_ts_logit.pdf")
 #     - seems to have two modes 2010-2015 and outside
 
 
-pc = pd.DataFrame(U_rate, index=mortality_wide.loc[("Deaths", slice(None), slice(None)), :].index)
+pc = pd.DataFrame(U_rate, index=df_ts.loc[(slice(None), slice(None), "pred_rate"), :].index)
 pc.columns = ["PC{}".format(i+1) for i in range(36)]
 pc.reset_index(inplace=True)
 pc.drop(columns="Value", inplace=True)
@@ -93,13 +82,13 @@ pc.reset_index(inplace=True)
 
 
 
-pc.to_csv("./data/processed/pc.csv", index=False)
+pc.to_csv("./data/processed/pred_pc.csv", index=False)
 
 
 
 mean = pd.DataFrame(
     {"Mean": pca.mean_},
-    index=pd.to_datetime(mortality_wide.columns)
+    index=pd.to_datetime(df_ts.columns)
 )
 
-mean.to_csv("./data/processed/pc_mean.csv")
+mean.to_csv("./data/processed/pred_pc_mean.csv")

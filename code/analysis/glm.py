@@ -37,7 +37,7 @@ df.columns = ["Deaths", "Sex", "Age_group", "Age", "Year", "Month", "Exposure", 
 df.to_csv("./data/processed/df_for_glm.csv")
 
 
-families = ["logNormal", "Poisson", "NB"]
+families = ["logNormal", "Poisson", "NB", "Tweedie"]
 
 formulas = {
     "sA*(sD+S*sM)": "Deaths ~ bs(Age, 9) * (bs(FDate, 50) + C(Sex) * bs(Month, 7))",
@@ -74,6 +74,8 @@ for family, (name, formula) in models:
         glm = sm.GLM(y, X, family=sm.families.Poisson(), exposure=exp)
     elif family == "NB":
         glm = sm.GLM(y, X, family=sm.families.NegativeBinomial(), exposure=exp)
+    elif family == "Tweedie":
+        glm = sm.GLM(y, X, family=sm.families.Tweedie(var_power=1.5, eql=True), exposure=exp)
     elif family == "logNormal":
         fm = sm.families.Gaussian(link=sm.families.links.log())
         glm = sm.GLM(y, X, family=fm, exposure=exp)
@@ -97,23 +99,23 @@ print(bests[["AIC", "BIC", "MSE", "MSEL"]].applymap("{:.4f}".format))
 results.drop(columns="model").to_csv("./data/results/glm_models.csv")
 
 
-best_models = results.iloc[[2, 10, 16]]
+best_models = results.iloc[[2, 10, 16, 24]]
 print(best_models[["MSE", "MSEL"]])
 best_models.drop(columns="model").to_csv("./data/results/glm_best_models.csv")
 
-x = res.predict()
-pred = res.predict()
-z = np.polyfit(x, y, 2)
-p = np.polynomial.polynomial.Polynomial(z, domain=[0, 60000])
-xs = np.linspace(0, 55000)
-
-plt.figure()
-
-plt.scatter(x, pred-y)
-
-plt.plot(xs, poisson.ppf(q=0.025, mu=xs) - xs)
-plt.plot(xs, poisson.ppf(q=0.25, mu=xs) - xs)
-plt.plot(xs, poisson.ppf(q=0.75, mu=xs) - xs)
-plt.plot(xs, poisson.ppf(q=0.975, mu=xs) - xs)
-
-plt.savefig("./tmp/poisson.pdf")
+# x = res.predict()
+# pred = res.predict()
+# z = np.polyfit(x, y, 2)
+# p = np.polynomial.polynomial.Polynomial(z, domain=[0, 60000])
+# xs = np.linspace(0, 55000)
+#
+# plt.figure()
+#
+# plt.scatter(x, pred-y)
+#
+# plt.plot(xs, poisson.ppf(q=0.025, mu=xs) - xs)
+# plt.plot(xs, poisson.ppf(q=0.25, mu=xs) - xs)
+# plt.plot(xs, poisson.ppf(q=0.75, mu=xs) - xs)
+# plt.plot(xs, poisson.ppf(q=0.975, mu=xs) - xs)
+#
+# plt.savefig("./tmp/poisson.pdf")

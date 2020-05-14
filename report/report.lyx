@@ -8,18 +8,18 @@
 \begin_preamble
 \usepackage[labelfont = {bf}, textfont ={it}, 
 margin =1cm,font=small, tablename = Table ]{caption}
-\usepackage{booktabs}
-\usepackage{array}
+
+\usepackage[table, dvipsnames]{xcolor}
+\usepackage{array,booktabs}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhead[R]{\small S. Fontaine}
-\fancyhead[L]{\small Applied QR 2020 -- Chicago Traffic Crashes}
+\fancyhead[L]{\small Applied QR 2020 -- U.S. Mortality 2007-2018}
 \end_preamble
 \use_default_options true
 \begin_modules
 theorems-ams
 eqs-within-sections
-figs-within-sections
 todonotes
 \end_modules
 \maintain_unincluded_children false
@@ -47,7 +47,7 @@ todonotes
 \paperfontsize default
 \spacing onehalf
 \use_hyperref true
-\pdf_title "Applied QR 2020 - Chicago Traffic Crashes"
+\pdf_title "Applied QR 2020 - U.S. Mortality 2007-2018"
 \pdf_author "Simon Fontaine"
 \pdf_bookmarks true
 \pdf_bookmarksnumbered true
@@ -85,9 +85,9 @@ todonotes
 \color #008000
 \end_index
 \leftmargin 3cm
-\topmargin 3cm
+\topmargin 2.5cm
 \rightmargin 3cm
-\bottommargin 3cm
+\bottommargin 2.5cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -119,8 +119,10 @@ University of Michigan, Department of Statistics
 \end_inset
 
 
+\shape italic
 \size larger
-Applied QR 2020
+Applied Qualifying Examination 2020
+\shape default
 \size default
 
 \begin_inset Newline newline
@@ -128,7 +130,8 @@ Applied QR 2020
 
 
 \series bold
-<Title>
+U.S.
+ Mortality 2007-2018: Identifying Trends and Patterns in Mortality Trajectories
 \end_layout
 
 \begin_layout Author
@@ -151,6 +154,27 @@ literal "false"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\emph on
+Examiners:
+\emph default
+
+\begin_inset Newline newline
+\end_inset
+
+Kerby Shedden 
+\begin_inset Newline newline
+\end_inset
+
+Gongjun Xu
+\begin_inset Newline newline
+\end_inset
+
+Ji Zhu
 \end_layout
 
 \begin_layout Standard
@@ -183,57 +207,85 @@ LatexCommand tableofcontents
 
 \end_layout
 
-\begin_layout Section*
-To Do, Notes and Comments
-\end_layout
-
-\begin_layout Itemize
-maybe pull in some census data to get better month estimates of population
-\end_layout
-
-\begin_layout Itemize
-midpoint/mean/median/use external data
-\end_layout
-
-\begin_layout Itemize
-estimate population per month
-\end_layout
-
-\begin_layout Itemize
-mean + 3 PC
-\end_layout
-
-\begin_layout Itemize
-Pc1 = main effects
-\end_layout
-
-\begin_layout Itemize
-pc2 = interaction with year
-\end_layout
-
-\begin_layout Itemize
-pc3 = interaction with month
-\end_layout
-
-\begin_layout Itemize
-Febuaray has only 28 days bro
-\end_layout
-
-\begin_layout Itemize
-pca on log for (1) same transform a Poisson and (2) they are basically the
- same with small rates.
-\end_layout
-
-\begin_layout Itemize
-maybe some extreme value for young females in ~Nov 2010
-\end_layout
-
 \begin_layout Section
 Introduction
 \end_layout
 
 \begin_layout Standard
-While larger vehicles are s
+Longitudinal analysis of mortality rates can provide significant insight
+ to multiple levels of public officials.
+ Indeed, observing an increase in mortality rate within some specific demographi
+c group indicate that more attention has to be devoted to that group and
+ its mortality patterns.
+ In particular, when such an increase is attributed to a specific cause,
+ this can warrant and guide targeted intervention.
+ 
+\end_layout
+
+\begin_layout Standard
+For example, studies 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "masters2017mortality,monnat2017drugs,woolf2019life"
+literal "false"
+
+\end_inset
+
+ have found recent increases in mortality rates due to suicides, drug poisonings
+ and alcohol-related illnesses, especially among middle-aged Americans.
+ In turn, these mortality causes have been shown to be associated with unemploym
+ent 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "iwh2009unemployment,henkel2011unemployment"
+literal "false"
+
+\end_inset
+
+ whose rates reached historical highs during the Great Recession (2007-2009):
+ 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "margerison2017health"
+literal "false"
+
+\end_inset
+
+ find increased morbidity, psychological distress and suicide rate in the
+ years following the event.
+ The authors also claim that the U.S.
+ was more severely impacted than European countries with stronger social
+ safety nets.
+ With the current COVID-19 epidemic, one can anticipate a second wave of
+ increased mortality—this time not due the disease itself, but rather to
+ its economic impacts.
+ These considerations thus instruct increased government intervention in
+ economic recovery as well as in mental illness prevention and treatment.
+ Additionally, the ongoing opioid epidemic in the U.S.—possibly in conjunction
+ with the economic situation—is a major contributing factor in the increase
+ in mortality due to drug overdose and may call for improved detection,
+ prevention and treatment as well as further substance control both within
+ the U.S.
+ and at its borders.
+ 
+\end_layout
+
+\begin_layout Standard
+In order to act on these issues, they must first be detected.
+ While time series of mortality rates can be particularly noisy, especially
+ when considering smaller demographic groups or smaller mortality rates,
+ it is important to be able to extract trends and patterns among them to
+ conclude some variation is associated with a cause or a demographic.
+ In this analysis, we analyze recent U.S.
+ mortality data aggregated by sex and age to study what trends and patterns
+ can be identified in mortality trajectories.
+ Since all mortality causes are aggregated, we cannot directly confirm results
+ such as those presented above: our analysis can be understood as a blueprint
+ for de-noising mortality time series and the same methodology could be
+ applied to finer data such as mortality rates per cause or by ethnicity
+ and race.
+ However, as a sanity check, we attempt to correlate our findings with those
+ presented in literature.
 \end_layout
 
 \begin_layout Subsection
@@ -241,37 +293,67 @@ Data Overview
 \end_layout
 
 \begin_layout Standard
-The data s
-\end_layout
+We consider U.S.
+ mortality rates from 2007 to 2018 extracted from 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "cdc2018mortality"
+literal "false"
 
-\begin_layout Subsection
-Research Questions
+\end_inset
+
+ and kindly aggregated by age group and sex by the examiners.
+ The data set contains monthly death counts as well as yearly population
+ estimates of each demographic group who are defined by sex (Female or Male)
+ and age group (five years intervals for age 0 to 84 and 85 to 99).
+ Hence, we have 72 time series (2 sexes 
+\begin_inset Formula $\times$
+\end_inset
+
+ 18 age groups 
+\begin_inset Formula $\times$
+\end_inset
+
+ 2 measurements), 36 of which are of length 144 (12 years 
+\begin_inset Formula $\times$
+\end_inset
+
+ 12 months) for death counts and 36 of length 12 (12 years) for population
+ estimates.
+ We report no missing data.
+ Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rate"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ depicts the log 
+\emph on
+mortality rate
+\emph default
+ (deaths/population) for those 36 demographic groups along the period of
+ interest.
 \end_layout
 
 \begin_layout Standard
-Our main researc
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float table
-placement t
+\begin_inset Float figure
 wide false
 sideways false
 status open
 
 \begin_layout Plain Layout
 \align center
-
-\size small
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-%
-\backslash
-input{./tables/injury_frequency.tex}
-\end_layout
+\begin_inset Graphics
+	filename figs/log_rates.pdf
+	width 90line%
 
 \end_inset
 
@@ -284,12 +366,15 @@ input{./tables/injury_frequency.tex}
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "tab:injury_frequency"
+name "fig:rate"
 
 \end_inset
 
-Frequency of reported injuries by occupying vehicle type and other vehicle
- type.
+Log mortality rate (using the exposure described in the text) by sex and
+ age groups.
+ Solid lines corresponds to females and dashed lines to males.
+ The color gradient defines the sequence of age groups from 0-4 years old
+ (blue) to 85-99 years old (green).
 \end_layout
 
 \end_inset
@@ -300,14 +385,58 @@ Frequency of reported injuries by occupying vehicle type and other vehicle
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Research Questions
 \end_layout
 
 \begin_layout Standard
+Our main research question is to identify what trends and patterns can be
+ extracted from monthly mortality trajectories.
+ We are particularly interested in building a model for deaths counts including
+ estimated population, time effect, month effect and demographic information.
+ The time effect will inform us on the average mortality rate of a demographic
+ as well as extracting the trend over time of that rate; the month effect
+ can tell us about seasonal patterns.
+ The demographic information then allows us to model how these trends and
+ patterns change with respect to sex and age group.
+\end_layout
+
+\begin_layout Standard
+Emerging from the main question of interest are multiple secondary modeling
+ consideration.
+ First, death counts correspond to large positive integer data and many
+ distribution assumptions could be used for our model: appropriate selection
+ and diagnostic has to be performed.
+ Second, the way in which each covariate (time, month, demographic group)
+ influences the response and interact with each other has to be specified
+ and selected.
+\end_layout
+
+\begin_layout Standard
+Finally, we wish to learn a low-dimensional representation of mortality
+ time series enabling us to easily describe and compare different time series:
+ complex interaction between the different covariates may prevent us from
+ extracting relevant insights just from inspecting the marginal effect of
+ each covariate.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
 \begin_inset Newpage clearpage
 \end_inset
 
 
 \begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \end_inset
 
 
@@ -331,16 +460,340 @@ name "sec:Methodology"
 Data Pre-processing
 \end_layout
 
-\begin_layout Standard
-The first step
+\begin_layout Paragraph
+Age Group Midpoints.
 \end_layout
 
 \begin_layout Standard
+Within a given age group, the distribution of ages may not be evenly distributed.
+ In particular, older age groups will contain more people in the lower end
+ of the interval: for example, we expect much more 85 years olds than 99
+ years olds in the 85-99 age group.
+ Since some of the model we will consider use the age groups as a numerical
+ value, we cannot simply use the midpoint of each interval as it would bias
+ the actual average age within a group.
+ To account for that fact, we will rather use a midpoint computed using
+ linear interpolation.
+ For each month, year, sex and age group, we identify a trend as the slope
+ between the previous age group and the next age group (for fixed month,
+ year and sex) and assume the current group's distribution follows the same
+ slope.
+ For the 0-4 age group, we set the previous age group's population as the
+ same as group 0-4; for the 85-99 age group, we set the next age group's
+ population to 0.
+ The process is repeated for every month and year and by sex.
+ In practice, the estimated midpoint for age groups up to 45 years old are
+ virtually the same as the true midpoint (the age pyramid is rather flat
+ on that range); Table
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:midpoints"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ contains the average (over all 144 months and sexes) estimated midpoint
+ for each age group.
+ We experimented with naive and estimated midpoints and found that the estimated
+ ones perform slightly better in our models (not reported for brevity).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement t
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+
+\size small
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+input{./tables/midpoints.tex}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:midpoints"
+
+\end_inset
+
+Average estimated midpoints per age group.
+ Groups below 45 years are estimated almost exactly to the true midpoint
+ of the corresponding interval.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Estimated Monthly Population.
+\end_layout
+
+\begin_layout Standard
+The original data contains only the 
+\emph on
+yearly
+\emph default
+ estimated population in each demographic group.
+ However, we have access to 
+\emph on
+monthly
+\emph default
+ death counts: computing the mortality rate using the yearly population
+ may not be an accurate measurement.
+ Instead, we will estimate a monthly population within each demographic
+ group using linear interpolation.
+ For a fixed sex and age group, we set the population of month 6 of every
+ year to be the yearly population and interpolate linearly between those
+ 12 points; the monthly population beyond those points is set to be constant.
+ Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:est_pop"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows an example of the interpolation performed for Females between 0 and
+ 4 years old.
+ The result is a continuously varying population and attenuates drastic
+ changes in population: it is highly unlikely that the population of Females
+ between 0 and 4 years old dropped by over 500,000 on 2012's New Year Day.
+ We experimented using the estimated yearly and monthly populations in our
+ models and found that the monthly population exhibited marginally improved
+ performance (not reported for brevity).
+ From here on, 
+\emph on
+population
+\emph default
+ will refer to estimated monthly population without ambiguity.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/est_pop.pdf
+	width 90line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:est_pop"
+
+\end_inset
+
+Example of the linear interpolation estimation of the monthly population
+ described in the text.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Exposure and Daily Mortality Rate.
+\end_layout
+
+\begin_layout Standard
+In the first iterations of the current analysis, we identified a pattern
+ of decrease in mortality rates in the month of February which was trivially
+ explained by the shorter length of that month.
+ Indeed, with less time, we expect less people to die.
+ This justify to rather consider 
+\emph on
+daily
+\emph default
+ mortality rates instead of monthly rates.
+ To achieved this, we compute the monthly 
+\emph on
+exposure
+\emph default
+ of a population as the product of its population and the length (in days)
+ of that month.
+ From here on, 
+\emph on
+mortality rate
+\emph default
+ refers to the death count divided by the exposure of that demographic group
+ during a given month.
+\end_layout
+
+\begin_layout Subsection
+Data Exploration
+\end_layout
+
+\begin_layout Standard
+In order to summarize mortality trajectories for analysis and comparison,
+ we consider a 
+\emph on
+Principal Component Analysis
+\emph default
+ (PCA) of the 36 log mortality rate time series.
+ The study of the most important components can unveil what properties of
+ a trajectory are useful at describing it by capturing most of its variations.
+ Then, comparing the scores of the time series by sex and age group can
+ guide us toward a model description of the interactions between demographic
+ and time.
+ This will eventually help us defining the mean model requiring the specificatio
+n of how covariates act on the response and how they interact with each
+ other.
+\end_layout
+
+\begin_layout Standard
+Furthermore, the same process can be repeated on the fitted values emanating
+ from the selected model.
+ Indeed, we can reconstruct the de-noised time series and perform PCA on
+ them.
+ This will tell us what our model understand from the collection of time
+ series and the comparison between demographic groups will then allow us
+ to extract insight on how mortality trajectories differ between groups
+ when noise has been removed.
+\end_layout
+
+\begin_layout Standard
+Note that we choose to act on the logarithm of the mortality rate for multiple
+ reasons.
+ First, the models we consider all model the relationship between the death
+ count, exposure and covariates through a log link so performing PCA on
+ the log rate is sensible for consistency.
+ Second, it would be unwise to perform PCA on the raw counts as there is
+ more variability in larger population groups and in groups with larger
+ mortality rate.
+ Third, since rates are proportions by nature, it would also make sense
+ to use a logit transformation instead: however, all observed rates are
+ close to 0 (the largest is 0.017) where the two functions are almost identical.
+\end_layout
+
+\begin_layout Subsection
+Mortality Rate Modeling
+\end_layout
+
+\begin_layout Standard
+To model death counts using exposure, time, month, sex and age group, we
+ consider 
+\emph on
+Generalized Linear Models
+\emph default
+ (GLM).
+ We restrict our study to GLM families modeling non-negative data since
+ death counts are non-negative integer data.
+ Also, to account for the exposure, we consider only mean models using the
+ log link which, effectively, implies that we model the mortality rate and
+ not the counts directly.
+ 
+\end_layout
+
+\begin_layout Standard
+Since our response is integer-valued, there are two obvious candidate families:
+ Poisson and Negative Binomial (NB).
+ Both distribution allow for non-negative integer response with unbounded
+ domain.
+ The main difference between the two families is that the Negative Binomial
+ distribution is more suitable to over-dispersed counts since its mean-variance
+ relationship is quadratic in the mean instead of linear (Poisson).
+ 
+\end_layout
+
+\begin_layout Standard
+While our response is integer-values, right-continuous distributions are
+ also relevant to our analysis.
+ Indeed, the observed count are large (the smallest being 51) so using a
+ continuous family does not suffer from the discretized values.
+ Thus, we consider also consider Normal GLM with log link which has variance
+ exponential in its mean and can then model severely over-dispersed data.
+ Finally, we also consider a Tweedie model with power 1.5 which can be interprete
+d as halfway between a Poisson model and a NB model.
+ Indeed, a Tweedie with power 1 is exactly Poisson and a Tweedie with power
+ 2 is Gamma which closely resembles a continuous version of the NB distribution.
+ A Tweedie (1.5) model has variance proportional to the 1.5th power of the
+ mean.
+\end_layout
+
+\begin_layout Standard
+Studying the fit of each model to the data allows us to study the over-dispersio
+n of the death counts.
+ In increasing order of over-dispersion, we have: Poisson, Tweedie(1.5),
+ NB and Normal (log link).
+ We inspect the Pearson residuals normalized by the estimated scale (Pearson's
+ 
+\begin_inset Formula $\chi^{2}$
+\end_inset
+
+/degrees of freedom): better fit can be identified through residuals with
+ constant variance along fitted means values.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
 \begin_inset Newpage clearpage
 \end_inset
 
 
 \begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \end_inset
 
 
@@ -363,13 +816,103 @@ Python
 \align center
 \begin_inset CommandInset href
 LatexCommand href
-name "https://github.com/fontaine618/crime"
-target "https://github.com/fontaine618/crime"
+name "https://github.com/fontaine618/qr"
+target "https://github.com/fontaine618/qr"
 literal "true"
 
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
+Data pre-processing and manipulation was performed using 
+\family typewriter
+pandas v1.0.3
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "pandas"
+literal "false"
+
+\end_inset
+
+ and 
+\family typewriter
+numpy
+\family default
+ v1.18.2 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "numpy"
+literal "false"
+
+\end_inset
+
+, PCA using 
+\family typewriter
+scikit-learn v0.22.2.post1
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "scikit-learn"
+literal "false"
+
+\end_inset
+
+, GLMs using 
+\family typewriter
+statsmodels v0.11.1
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "statsmodels"
+literal "false"
+
+\end_inset
+
+ and 
+\family typewriter
+patsy v0.5.1
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "patsy"
+literal "false"
+
+\end_inset
+
+ and plotting using 
+\family typewriter
+matplotlib v3.2.0
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "matplotlib"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Analysis of Observed Mortality Rates
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:pca_observed"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -380,16 +923,594 @@ sideways false
 status open
 
 \begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/pca_ts_logit.pdf
+	width 90line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/pc_mean.pdf
+	width 93line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:variable_importance"
+name "fig:pca_observed"
 
 \end_inset
 
-Variable
+Results from the PCA on the observed log mortality rate trajectories.
+ The first three rows contain, for the first three principal components
+ respectively, (left) the plot of the minimum and maximum effect of the
+ component and (right) the value of the component by sex and age group.
+ The fourth row contains the mean of the data (left) through years and (right)
+ by months.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Visual inspection of the log mortality rates (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:rate"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) show some clear trends an pattern: increasing age is related to increased
+ mortality rates and to larger seasonal effects; there appear to be some
+ differences between males and females; young children (0-4 years olds)
+ have higher mortality rates than older age groups (5+ years old); etc.
+ Performing PCA on these 36 time series yeilds the results in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The inspection of the mean (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 4th row) shows a clear average evolution over time—decreasing between
+ 2007 and 2013 and increasing afterwards—as well as a clear seasonal effect—high
+ for winter months and low for summer months.
+ Both effects appear to be rather independent as the seasonal trend seems
+ relatively constant through years.This indicates that our model should contain
+ the main effect of time and of months.
+\end_layout
+
+\begin_layout Standard
+The first principal component (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 1st row), which explains 99.9% of the variance seem to capture mostly the
+ average rate over time as well a corresponding adjustment of the seasonal
+ effect: positive first components are associated with larger rates and
+ stronger seasonal effect; negative first components are associated with
+ smaller rates and seasonal effect in the opposite direction of that of
+ the mean, weaker seasonal effect when summing the two.
+ Except for the 0-4 age group, we see a monotone increase in first component
+ with age.
+ These observations imply we should include the main effect of age, possibly
+ interacted with sex, as well as the interaction between month and age (and
+ possibly sex).
+\end_layout
+
+\begin_layout Standard
+The second component (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 2nd row), which explains 46% of the remaining variance (removing the effect
+ of the first component), seem to capture the trend over time as well as
+ some correction to the seasonal effect.
+ Positive second components show a relatively linear increase over time
+ and are observed for people between 20 and 40 years old.
+ Negative second components show a somewhat linear decrease over time and
+ are observed mostly for people under 20 years old.
+ This indicates we should consider the interaction between time and age
+ (and possibly sex and month, though the effect is less evident).
+\end_layout
+
+\begin_layout Standard
+The third component (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 3rd row), which explains 14% of the remaining variance (removing the effect
+ of the first component) seem to capture curvature over time and some seasonal
+ effect.
+ Positive third components, observed for males in the 15-19 age group, show
+ a positive curvature while negative third components, observed for females
+ of the 5-9 age group, show a small negative curvature over time.
+ This also indicates we should include the interaction between time, age
+ and sex.
+\end_layout
+
+\begin_layout Standard
+Overall, we consider the following model, which contains all effects mentioned
+ above,
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula 
+\[
+\log\mathbb{E}\left\{ \frac{{\textstyle \texttt{Deaths}}}{{\textstyle \texttt{Exposure}}}\right\} ={\textstyle \texttt{Age}}\ast\left({\textstyle \texttt{Date}}+{\textstyle \texttt{Sex}}\ast{\textstyle \texttt{Month}}\right),
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $\ast$
+\end_inset
+
+ denotes the inclusion of both main effects as well as the two-way interaction.
+ In particular, we find no indication that the seasonal effect changes over
+ time.
+ In the next section, we use this model in order to de-noise the time series
+ in order to get a clearer version of Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Mortality Rate Modeling
+\end_layout
+
+\begin_layout Standard
+Along with the four GLM families we consider, we also investigate different
+ models for the marginal effects of the covariates.
+ In the case of the age group, we either model it continuously using the
+ midpoints with a cubic spline with 9 terms (denoted 
+\family typewriter
+sA
+\family default
+) or using the groups as categories (18 levels, denoted 
+\family typewriter
+cA
+\family default
+).
+ For the time effect, we either model it using the date with 50 cubic splines
+ (denoted 
+\family typewriter
+sD
+\family default
+) or using the year using 7 cubic splines (denoted 
+\family typewriter
+sY
+\family default
+).
+ For the effect of months, we either consider 7 cubic splines (denoted 
+\family typewriter
+sM
+\family default
+) or as categories (12 levels, denoted 
+\family typewriter
+cM
+\family default
+).
+ Finally, the sex covariate (denoted 
+\family typewriter
+S
+\family default
+) only admits two levels and any modeling will be equivalent.
+ We therefore have 8 declinations for each family for a total of 32 models.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+
+\size small
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+input{./tables/model_selection.tex}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:models"
+
+\end_inset
+
+Results from the 4 GLM families and 8 formulas fitted on the log mortality
+ rates.
+ See text for a description of the formulas.
+ The MSEL is the mean squared error between the log mortality rates and
+ the log predicted rates.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Within family, we select the best model using an arbitrary combination of
+ log-likelihood, AIC and BIC: we choose the formula where all three statistics
+ are among the bests.
+ The results for all families and formulas are in Table
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:models"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+; the selected models are described in Table
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:best_models"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The selected formulas are almost identical except that the Normal model
+ with log link and the Poisson model uses months as a categorical variable
+ instead of using splines; age is modeled using splines and time is modeled
+ using splines on the date for all four families.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+
+\size small
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+input{./tables/best_models.tex}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:best_models"
+
+\end_inset
+
+Results for the selected model within each GLM family.
+ See text for a description of the formulas.
+ The MSEL is the mean squared error between the log mortality rates and
+ the log predicted rates.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+All four families perform rather similarly in terms of prediction error.
+ Indeed, both the mean squared error (MSE) and the mean squared error of
+ the log (MSEL) do not vary much across families.
+ To select a model between those four candidates, we investigate how the
+ model the over-dispersion of the data.
+ Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:residuals"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ depicts the normalized Pearson residuals along the fitted means.
+ The Normal model with log link and the Poisson model perform badly for
+ large fitted mean, which can be seen by large residuals at the right end
+ of the domain; the NB model has larger residuals for smaller fitted means;
+ the Tweedie (1.5) model has residuals with fairly constant variance throughout
+ the domain.
+ For this reason, we choose the Tweedie (1.5) model for our final model as
+ it fits death counts uniformly well.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/resid_plot.pdf
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:residuals"
+
+\end_inset
+
+Pearson residuals (blue) normalized by the estimated scale; running mean
+ (solid, black) and 
+\begin_inset Formula $\pm1.96$
+\end_inset
+
+ running standard deviations from the mean (dashed, black); frequency of
+ the fitted mean (green).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Analysis of Predicted Mortality Rates
+\end_layout
+
+\begin_layout Standard
+Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_predicted"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ contains the same procedure that was on the observed log mortality rates
+ of Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:pca_observed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, but now performed on the fitted values from our selected model.
+ Overall, we observe the exact same trends and patterns, but the seasonal
+ effects are now much clearer to see.
+ Also, the associations with sex and age group are almost identical.
+ For the mean, we still observe high mortality rates in the winter, but
+ we now also see a small jump in June and July, relative to other summer
+ months, that was not as obvious in the noisy data.
+ In the case of component two, positive values, associated with increase
+ over time, seem to remove the drop in mortality rates observed around September
+; negative values, associated with decrease over time seem to exacerbate
+ that same drop.
+ For component three, positive values seem to strengthen the time and seasonal
+ effects observed in the mean while negative values tends to attenuate those
+ same effects.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement t
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/pred_pca_ts_logit.pdf
+	width 90line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/pred_pc_mean.pdf
+	width 90line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pca_predicted"
+
+\end_inset
+
+Results from the PCA on the fitted log mortality rate trajectories using
+ the selected model.
+ The first three rows contain, for the first three principal components
+ respectively, (left) the plot of the minimum and maximum effect of the
+ component and (right) the value of the component by sex and age group.
+ The fourth row contains the mean of the data (left) through years and (right)
+ by months.
 \end_layout
 
 \end_inset
@@ -407,22 +1528,267 @@ Discussion
 \end_layout
 
 \begin_layout Subsection
+Variations across Demographic Groups
+\end_layout
+
+\begin_layout Standard
+Consolidating the observations regarding the principal components in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pca_predicted"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we can finally compare the mortality trajectories between demographic
+ groups define by sex and age.
+ 
+\end_layout
+
+\begin_layout Standard
+With respect to average mortality, we find that mortality rate increases
+ with age, which is not surprising at all due the the nature of life itself.
+ Also, we find that the 0-4 years old demographic exhibit large mortality
+ rate as well, which could be explained by infant mortality and children
+ diseases that do not occur for other age groups.
+ We also point out that males between 15 and 39 show increased mortality
+ rate compared with females of the same age: this effect is most likely
+ due to increased mortality caused by of accidents, substance abuse and
+ homicides within that demographic 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "masters2017mortality,woolf2019life"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+With respect to change over time, we find that the overall mortality rate
+ decreased from 2007 to 2013 and increased between 2013 and 2017.
+ During those years, however, we find that people under the age of 20 have
+ shown a small decrease in mortality rate with respect to the mean trend
+ and that people between the age of 25 and 39 have shown a large increase
+ in mortality.
+ The decrease for children is partly due to a decrease in infant mortality
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "callaghan2013explaining"
+literal "false"
+
+\end_inset
+
+ and to other factors such as decrease in traumatic brain injuries 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "cheng2020traumatic"
+literal "false"
+
+\end_inset
+
+ while the increase for middle-aged people can possibly be attributed to
+ the increased in suicides and substance abuse-related deaths discussed
+ in the introduction.
+ Another factor contributing to that increase is the relative increase of
+ deaths related to obesity 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "preston2018role"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+With respect to seasonal effects, the picture is slightly more complicated
+ as the mean and all three components capture part of that effect.
+ The overall effect is higher mortality rates during winter month (December-Marc
+h) and lower mortality during the rest of the year with a small jump during
+ June and July, but that effect seems only apparent for older-aged people.
+ There are two main factors explaining this effect.
+ First, winter months corresponds to flu season and flu-related death are
+ majoritively observed within the older population 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "cdc2020estimated"
+literal "false"
+
+\end_inset
+
+.
+ Similarly, cardiovascular-related mortality was shown to peak during winter
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "stewart2016seasonal"
+literal "false"
+
+\end_inset
+
+.
+ Second, June and July corresponds to some of the warmer months of the year
+ and the elderly show increased risk heat-related illnesses during heatwaves
+ 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "cheng2018heatwave"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
 On the Analysis
 \end_layout
 
 \begin_layout Standard
-Amon
-\end_layout
+A major weakness of our modeling approach is the failure to account for
+ time dependency.
+ Indeed, mortality time series are inherently auto-correlated since a very
+ large fraction of each demographic group is contained in consecutive months.
+ The GLM approach considered here implicitly assume conditional independence
+ of the count given the covariates.
+ Therefore, we would need that, given the time (year and month) and given
+ a demographic group and its exposure, the death count is independent from
+ any other configuration.
+ One way to check if this assumption is reasonable for our data is to look
+ at the time series of the Pearson residuals.
+ Under the assumption that our model is correct, the Pearson residuals should
+ have constant variance and be uncorrelated.
+ Hence, the time series of Pearson residuals should resemble a white noise
+ series.
+ Inspecting the auto-correlation function of all 36 series of residuals,
+ shown in Figure
+\begin_inset space ~
+\end_inset
 
-\begin_layout Subsection
-On the Results
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:acf"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, indicate that there remains some very minor auto-correlation.
+ Some series show stronger correlation on small lags and others show some
+ residual seasonal effect, but the overall trend does not show severe problems.
+ This further indicates that we have successfully extracted most of the
+ signal in these 36 time series.
 \end_layout
 
 \begin_layout Standard
-In the Ch
+\begin_inset Float figure
+placement t
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figs/autocorr.pdf
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:acf"
+
+\end_inset
+
+Autocorrelation function of the Pearson residual series (blue) and their
+ mean (black).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
+On another note, the Negative Binomial and Tweedie (1.5) both seem to perform
+ well when we inspect the Pearson residuals (Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:residuals"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), but they seem to seem the fit the data differently well on opposing ends
+ of the domain.
+ Since NB is closely related to a Tweedie (2), it could interesting to further
+ tune the Tweedie power to find an even better model (most likely with a
+ power between 1.5 and 2) using profile likelihood 
+\begin_inset CommandInset citation
+LatexCommand citep
+key "dunn2005series"
+literal "false"
+
+\end_inset
+
+ or the method described in 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "dunn2018tweedie"
+literal "false"
+
+\end_inset
+
+.
+ Emerging from our analysis is that death counts are over-dispersed with
+ respect to a Poisson model with an optimal mean-variance relationship that
+ is polynomial with a power somewhere between 1.5 and 2.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\paragraph_spacing single
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
 btprint "btPrintCited"
@@ -434,9 +1800,8 @@ options "bibtotoc,abbrvnat"
 
 \end_layout
 
-\begin_layout Section
-\start_of_appendix
-Supplemental Tables
+\begin_layout Standard
+
 \end_layout
 
 \end_body
